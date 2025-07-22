@@ -2,7 +2,7 @@
 <html lang="vi">
 <head>
   <meta charset="UTF-8">
-  <title>IFS Attractor với Point Cloud Collision Detection</title>
+  <title>IFS Attractor với Hausdorff Distance</title>
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -41,6 +41,14 @@
       border: 1px solid #555;
       border-radius: 4px;
     }
+    button {
+      padding: 5px 10px;
+      background: #4caf50;
+      color: #fff;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
     canvas {
       border: 1px solid #fff;
       background: #000;
@@ -70,13 +78,14 @@
     <h2>IFS Attractor: f₁ (xanh lá), f₂ (đỏ)</h2>
     <div id="controls">
       <label for="kInput">k: </label>
-      <input type="number" id="kInput" value="0.5" step="0.01" min="0" max="1">
-      <input type="range" id="kSlider" min="0" max="1" step="0.01" value="0.5">
+      <input type="number" id="kInput" value="0.5" step="0.01" min="-2" max="2">
+      <input type="range" id="kSlider" min="-2" max="2" step="0.01" value="0.5">
+      <button onclick="draw()">Vẽ lại</button>
     </div>
     <canvas id="canvas" width="600" height="600"></canvas>
   </div>
   <div id="right-panel">
-    <h3>Các bước Point Cloud Collision Detection</h3>
+    <h3>Các bước Hausdorff Distance</h3>
     <div id="algorithm-steps"></div>
   </div>
 
@@ -88,11 +97,11 @@
     const stepsDiv = document.getElementById("algorithm-steps");
 
     let points = [[0, 0]];
-    const maxPoints = 10000;
+    const maxPoints = 100000; // Giống code mẫu để hình vẽ đậm đặc
 
     kInput.addEventListener("input", () => {
       let value = parseFloat(kInput.value);
-      if (!isNaN(value) && value >= 0 && value <= 1) {
+      if (!isNaN(value) && value >= -2 && value <= 2) {
         kSlider.value = value;
         points = [[0, 0]];
         draw();
@@ -106,26 +115,25 @@
     });
 
     function transform(x, y, k, which) {
-      if (which === 1) {
-        return [0.5 * x, 0.5 * y + k]; // f1(x, y) = (0.5x, 0.5y + k)
-      } else {
-        return [0.5 * x + 1, 0.5 * y + 1 - k]; // f2(x, y) = (0.5x + 1, 0.5y + 1 - k)
+      let newX = y;
+      let newY = k * x;
+      if (which === 2) {
+        newY += 1 - k;
       }
+      return [newX, newY];
     }
 
-    function toCanvas(px, py, minX, maxX, minY, maxY) {
+    function toCanvas(px, py) {
       const width = canvas.width;
       const height = canvas.height;
-      const xRange = maxX - minX || 1;
-      const yRange = maxY - minY || 1;
       return [
-        ((px - minX) / xRange) * width,
-        ((maxY - py) / yRange) * height
+        width / 2 + px * width / 3,
+        height / 2 - py * height / 3
       ];
     }
 
-    function pointCloudCollisionDetection(greenPoints, redPoints) {
-      // Bước 1: Định nghĩa bề mặt ngầm và tính giới hạn
+    function hausdorffDistance(greenPoints, redPoints) {
+      // Bước 1: Tính giới hạn của point clouds
       let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
       greenPoints.forEach(([x, y]) => {
         minX = Math.min(minX, x); maxX = Math.max(maxX, x);
@@ -136,130 +144,91 @@
         minY = Math.min(minY, y); maxY = Math.max(maxY, y);
       });
       const scale = Math.max(maxX - minX, maxY - minY) || 1;
-      const r_epsilon = 0.1 * scale;
-      const d_epsilon = 0.005 * scale; // Giảm d_epsilon để nhạy hơn với touching
+      const epsilon1 = 0.05 * scale; // Ngưỡng cho overlap
+      const epsilon2 = 0.3 * scale;  // Ngưỡng cho touching/disconnected
 
-      let step1 = `Bước 1: Định nghĩa bề mặt ngầm\n`;
-      step1 += `  - Giới hạn: minX = ${minX.toFixed(2)}, maxX = ${maxX.toFixed(2)}, minY = ${minY.toFixed(2)}, maxY = ${maxY.toFixed(2)}\n`;
-      step1 += `  - r_ε = ${r_epsilon.toFixed(4)}, d_ε = ${d_epsilon.toFixed(4)}`;
+      let step1 = `Bước 1: Tính giới hạn\n`;
+      step1 += `  - minX = ${minX.toFixed(2)}, maxX = ${maxX.toFixed(2)}, minY = ${minY.toFixed(2)}, maxY = ${maxY.toFixed(2)}\n`;
+      step1 += `  - scale = ${scale.toFixed(4)}, ε₁ = ${epsilon1.toFixed(4)}, ε₂ = ${epsilon2.toFixed(4)}`;
 
-      // Bước 2: Xây dựng cấu trúc phân cấp (quadtree đơn giản)
-      function buildQuadTree(points, depth = 0) {
-        if (points.length < 10 || depth > 3) return { points, bounds: { minX, maxX, minY, maxY } };
-        const midX = (minX + maxX) / 2;
-        const midY = (minY + maxY) / 2;
-        const quadrants = [[], [], [], []];
-        points.forEach(p => {
-          const [x, y] = p;
-          if (x < midX && y < midY) quadrants[0].push(p);
-          else if (x >= midX && y < midY) quadrants[1].push(p);
-          else if (x < midX && y >= midY) quadrants[2].push(p);
-          else quadrants[3].push(p);
+      // Bước 2: Lấy mẫu điểm để tính toán
+      const sampleSize = Math.min(100, greenPoints.length, redPoints.length);
+      const greenSample = greenPoints.slice(0, sampleSize);
+      const redSample = redPoints.slice(0, sampleSize);
+      let step2 = `Bước 2: Lấy mẫu điểm\n`;
+      step2 += `  - Số điểm mẫu xanh: ${greenSample.length}\n`;
+      step2 += `  - Số điểm mẫu đỏ: ${redSample.length}`;
+
+      // Bước 3: Tính khoảng cách Hausdorff một chiều
+      let hAB = -Infinity;
+      greenSample.forEach(p1 => {
+        let minDist = Infinity;
+        redSample.forEach(p2 => {
+          const dist = Math.sqrt((p1[0] - p2[0]) ** 2 + (p1[1] - p2[1]) ** 2);
+          minDist = Math.min(minDist, dist);
         });
-        return quadrants.map((q, i) => ({
-          points: q,
-          bounds: {
-            minX: i % 2 === 0 ? minX : midX,
-            maxX: i % 2 === 0 ? midX : maxX,
-            minY: i < 2 ? minY : midY,
-            maxY: i < 2 ? midY : maxY
-          }
-        })).filter(q => q.points.length > 0);
-      }
-      const greenTree = buildQuadTree(greenPoints);
-      const redTree = buildQuadTree(redPoints);
-      let step2 = `Bước 2: Xây dựng cấu trúc phân cấp\n`;
-      step2 += `  - Số vùng xanh: ${Array.isArray(greenTree) ? greenTree.length : 1}\n`;
-      step2 += `  - Số vùng đỏ: ${Array.isArray(redTree) ? redTree.length : 1}`;
-
-      // Bước 3: Duyệt phân cấp đồng thời
-      let pairs = [];
-      const greenNodes = Array.isArray(greenTree) ? greenTree : [greenTree];
-      const redNodes = Array.isArray(redTree) ? redTree : [redTree];
-      greenNodes.forEach(g => redNodes.forEach(r => {
-        const dist = Math.max(
-          Math.max(0, g.bounds.minX - r.bounds.maxX),
-          Math.max(0, r.bounds.minX - g.bounds.maxX),
-          Math.max(0, g.bounds.minY - r.bounds.maxY),
-          Math.max(0, r.bounds.minY - g.bounds.maxY)
-        );
-        if (dist <= d_epsilon * 2) pairs.push([g, r]); // Nới lỏng tiêu chí để phát hiện touching
-      }));
-      let step3 = `Bước 3: Duyệt phân cấp\n`;
-      step3 += `  - Số cặp vùng tiềm năng: ${pairs.length}`;
-
-      // Bước 4: Kiểm tra va chạm tại lá
-      let minDist = Infinity;
-      let overlapCount = 0;
-      pairs.forEach(([g, r]) => {
-        g.points.forEach(p1 => {
-          r.points.forEach(p2 => {
-            const dist = Math.sqrt((p1[0] - p2[0]) ** 2 + (p1[1] - p2[1]) ** 2);
-            minDist = Math.min(minDist, dist);
-            if (dist < d_epsilon) overlapCount++;
-          });
-        });
+        hAB = Math.max(hAB, minDist);
       });
-      let step4 = `Bước 4: Kiểm tra va chạm\n`;
-      step4 += `  - Khoảng cách nhỏ nhất d_AB = ${minDist.toFixed(4)}\n`;
-      step4 += `  - Số điểm chồng chéo: ${overlapCount}`;
+
+      let hBA = -Infinity;
+      redSample.forEach(p2 => {
+        let minDist = Infinity;
+        greenSample.forEach(p1 => {
+          const dist = Math.sqrt((p1[0] - p2[0]) ** 2 + (p1[1] - p2[1]) ** 2);
+          minDist = Math.min(minDist, dist);
+        });
+        hBA = Math.max(hBA, minDist);
+      });
+
+      // Bước 4: Tính khoảng cách Hausdorff hai chiều
+      const hausdorffDist = Math.max(hAB, hBA);
+      let step3 = `Bước 3: Tính khoảng cách Hausdorff\n`;
+      step3 += `  - h(A,B) = ${hAB.toFixed(4)}\n`;
+      step3 += `  - h(B,A) = ${hBA.toFixed(4)}\n`;
+      step3 += `  - H(A,B) = ${hausdorffDist.toFixed(4)}`;
 
       // Bước 5: Phân loại trạng thái
       let status = "Disconnected";
-      if (overlapCount > 10) status = "Overlap"; // Nhiều điểm gần nhau
-      else if (minDist <= d_epsilon * 2) status = "Touching"; // Gần nhưng không đủ chồng chéo
-      let step5 = `Bước 5: Phân loại trạng thái\n`;
-      step5 += `  - Trạng thái: ${status}`;
+      if (hausdorffDist <= epsilon1) status = "Overlap";
+      else if (hausdorffDist <= epsilon2) status = "Touching";
+      let step4 = `Bước 4: Phân loại trạng thái\n`;
+      step4 += `  - Trạng thái: ${status}`;
 
-      return [step1, step2, step3, step4, step5, status];
+      return [step1, step2, step3, step4, "", status];
     }
 
     function draw() {
       const k = parseFloat(kInput.value);
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-      while (points.length < maxPoints) {
-        let [x, y] = points[points.length - 1];
+      let x = 0, y = 0;
+      points = [[x, y]];
+      for (let i = 0; i < maxPoints; i++) {
         let which = Math.random() < 0.5 ? 1 : 2;
-        points.push(transform(x, y, k, which));
-      }
-
-      let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
-      for (let i = 100; i < points.length; i++) {
-        const [x, y] = points[i];
-        minX = Math.min(minX, x); maxX = Math.max(maxX, x);
-        minY = Math.min(minY, y); maxY = Math.max(maxY, y);
+        [x, y] = transform(x, y, k, which);
+        points.push([x, y]);
       }
 
       for (let i = 100; i < points.length; i++) {
         const [x, y] = points[i];
-        const [cx, cy] = toCanvas(x, y, minX, maxX, minY, maxY);
-        ctx.fillStyle = i % 2 === 0 ? "lime" : "red";
+        const [cx, cy] = toCanvas(x, y);
+        ctx.fillStyle = (i % 2 === 0) ? "lime" : "red";
         ctx.fillRect(cx, cy, 1, 1);
       }
 
       const greenPoints = points.filter((_, i) => i % 2 === 0 && i >= 100);
       const redPoints = points.filter((_, i) => i % 2 !== 0 && i >= 100);
-      const [step1, step2, step3, step4, step5, status] = pointCloudCollisionDetection(greenPoints, redPoints);
+      const [step1, step2, step3, step4, step5, status] = hausdorffDistance(greenPoints, redPoints);
       stepsDiv.innerHTML = `
         <p>${step1.replace(/\n/g, '<br>')}</p>
         <p>${step2.replace(/\n/g, '<br>')}</p>
         <p>${step3.replace(/\n/g, '<br>')}</p>
         <p>${step4.replace(/\n/g, '<br>')}</p>
-        <p>${step5.replace(/\n/g, '<br>')}</p>
         <p><strong>Kết luận (k = ${k.toFixed(2)}): ${status}</strong></p>
       `;
     }
 
     draw();
-
-    function animate() {
-      if (points.length < maxPoints) {
-        draw();
-      }
-      requestAnimationFrame(animate);
-    }
-    animate();
   </script>
 </body>
 </html>

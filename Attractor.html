@@ -1,126 +1,188 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-  <meta charset="UTF-8">
-  <title>IFS Attractor with Interaction Type</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Bài Giảng Gradient – Đạo Hàm Riêng – Ma Trận Đạo Hàm</title>
+  <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+  <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
   <style>
     body {
-      display: flex;
-      flex-direction: row;
-      font-family: sans-serif;
+      font-family: 'Roboto', sans-serif;
       margin: 0;
       padding: 0;
+      background-color: #f9f9f9;
+      font-size: 18px;
+      line-height: 1.6;
     }
-    canvas {
-      border: 1px solid black;
+
+    .container {
+      display: flex;
+      height: 100vh;
     }
-    .controls {
-      padding: 10px;
-      width: 300px;
+
+    .content, .video {
+      padding: 20px;
+      box-sizing: border-box;
+      transition: width 0.3s ease;
     }
-    #result {
-      margin-top: 20px;
-      padding: 10px;
-      background-color: #f2f2f2;
+
+    .content {
+      width: 60%;
+      overflow-y: scroll;
+      background: white;
+      border-right: 2px solid #eee;
+    }
+
+    .video {
+      width: 40%;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      background-color: #000;
+    }
+
+    iframe {
+      width: 100%;
+      height: 90%;
+      border: none;
+    }
+
+    .buttons {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      z-index: 999;
+    }
+
+    button {
+      margin-right: 10px;
+      padding: 10px 15px;
+      font-size: 14px;
+      border: none;
       border-radius: 5px;
+      background-color: #007BFF;
+      color: white;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background-color: #0056b3;
+    }
+
+    h1, h2, h3 {
+      font-weight: 700;
     }
   </style>
 </head>
+
 <body>
-  <div class="controls">
-    <label for="kRange">Tham số k:</label>
-    <input type="range" id="kRange" min="0" max="1" step="0.01" value="0.5"><br>
-    <input type="number" id="kValue" min="0" max="1" step="0.01" value="0.5"><br>
-    <div id="result">Đang tính toán...</div>
+  <div class="buttons">
+    <button onclick="toggleContent()">Ẩn/Hiện Bài Giảng</button>
+    <button onclick="toggleVideo()">Ẩn/Hiện Video</button>
   </div>
-  <canvas id="canvas" width="400" height="400"></canvas>
+  <div class="container">
+    <div class="content" id="content">
+      <h1>🎓 BÀI GIẢNG: GRADIENT – ĐẠO HÀM RIÊNG – MA TRẬN ĐẠO HÀM</h1>
+      <hr>
+      <h2>📘 1. Nhắc lại: Đạo hàm trong chương trình phổ thông</h2>
+      \[ f(x) = x^2 \Rightarrow f'(x) = 2x \]
+
+      <h2>📘 2. Gradient – Mở rộng lên hàm nhiều biến</h2>
+      \[ \nabla f = \left[ \frac{\partial f}{\partial x},\ \frac{\partial f}{\partial y} \right] \]
+
+      <h2>📘 3. Đạo hàm riêng – Công cụ để tính gradient</h2>
+      \[ \frac{\partial z}{\partial x} = 6x + y, \quad \frac{\partial z}{\partial y} = 2y + x \]
+
+      <h2>📘 4. Gradient – Vectơ đạo hàm riêng</h2>
+      \[ \nabla z = \left[ 6x + y,\ 2y + x \right] \]
+
+      <h2>📘 5. Đạo hàm riêng bậc hai</h2>
+      \[
+        \frac{\partial^2 z}{\partial x^2} = 6, \quad
+        \frac{\partial^2 z}{\partial y^2} = 2, \quad
+        \frac{\partial^2 z}{\partial x \partial y} = 1
+      \]
+
+      <h2>📘 6. Ma trận đạo hàm</h2>
+      <h3>✅ Ma trận Jacobian</h3>
+      \[
+      J =
+      \begin{bmatrix}
+      \frac{\partial z}{\partial x} & \frac{\partial z}{\partial y} \\
+      \end{bmatrix}
+      =
+      \begin{bmatrix}
+      6x + y & 2y + x
+      \end{bmatrix}
+      \]
+
+      <h3>✅ Ma trận Hessian</h3>
+      \[
+      H =
+      \begin{bmatrix}
+      \frac{\partial^2 z}{\partial x^2} & \frac{\partial^2 z}{\partial x \partial y} \\
+      \frac{\partial^2 z}{\partial y \partial x} & \frac{\partial^2 z}{\partial y^2}
+      \end{bmatrix}
+      =
+      \begin{bmatrix}
+      6 & 1 \\
+      1 & 2
+      \end{bmatrix}
+      \]
+
+      <h2>📘 7. Ứng dụng thực tế</h2>
+      \[ \theta := \theta - \alpha \nabla J(\theta) \]
+      \[ \theta := \theta - H^{-1} \nabla J(\theta) \]
+
+      <h2>🧠 Tóm tắt</h2>
+      <ul>
+        <li>Đạo hàm riêng: \( \frac{\partial z}{\partial x} = 6x + y \)</li>
+        <li>Gradient: \( \nabla z = [6x + y,\ 2y + x] \)</li>
+        <li>Jacobian: \( \begin{bmatrix} 6x + y & 2y + x \end{bmatrix} \)</li>
+        <li>Hessian: \( \begin{bmatrix} 6 & 1 \\ 1 & 2 \end{bmatrix} \)</li>
+      </ul>
+
+      <h2>📌 Bài tập gợi ý</h2>
+      \[ f(x, y) = x^3 + 3xy + y^2 \]
+      <ul>
+        <li>Tính gradient</li>
+        <li>Tính đạo hàm riêng bậc hai</li>
+        <li>Lập ma trận Hessian</li>
+      </ul>
+    </div>
+
+    <div class="video" id="video">
+      <h2 style="color: white; text-align: center;">🎥 Bài giảng YouTube</h2>
+      <iframe src="https://www.youtube.com/embed/YOUR_VIDEO_ID" allowfullscreen></iframe>
+    </div>
+  </div>
 
   <script>
-    const canvas = document.getElementById('canvas');
-    const ctx = canvas.getContext('2d');
-    const kRange = document.getElementById('kRange');
-    const kValue = document.getElementById('kValue');
-    const resultDiv = document.getElementById('result');
+    let contentVisible = true;
+    let videoVisible = true;
 
-    function drawIFS(k) {
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-      let points = [];
-      let x = 0, y = 0;
-      for (let i = 0; i < 100000; i++) {
-        let r = Math.random();
-        let newX, newY;
-        if (r < 0.5) {
-          newX = y;
-          newY = k * x;
-          ctx.fillStyle = 'green';
-        } else {
-          newX = y;
-          newY = k * x + (1 - k);
-          ctx.fillStyle = 'red';
-        }
-        x = newX;
-        y = newY;
-        let px = 200 + x * 150;
-        let py = 400 - y * 300;
-        ctx.fillRect(px, py, 1, 1);
-        if (i > 1000) points.push([px, py]);
-      }
-      return points;
+    function toggleContent() {
+      const content = document.getElementById('content');
+      const video = document.getElementById('video');
+
+      contentVisible = !contentVisible;
+      content.style.display = contentVisible ? 'block' : 'none';
+      video.style.width = contentVisible ? '40%' : '100%';
     }
 
-    function modifiedHausdorff(A, B) {
-      function meanMinDistance(P, Q) {
-        return P.reduce((sum, p) => {
-          let minDist = Infinity;
-          for (let q of Q) {
-            const dx = p[0] - q[0];
-            const dy = p[1] - q[1];
-            const dist = Math.sqrt(dx * dx + dy * dy);
-            if (dist < minDist) minDist = dist;
-          }
-          return sum + minDist;
-        }, 0) / P.length;
-      }
-      return Math.max(meanMinDistance(A, B), meanMinDistance(B, A));
+    function toggleVideo() {
+      const content = document.getElementById('content');
+      const video = document.getElementById('video');
+
+      videoVisible = !videoVisible;
+      video.style.display = videoVisible ? 'flex' : 'none';
+      content.style.width = videoVisible ? '60%' : '100%';
     }
-
-    function update() {
-      const k = parseFloat(kRange.value);
-      kValue.value = k;
-      let points1 = [], points2 = [];
-      let x = 0, y = 0;
-      for (let i = 0; i < 100000; i++) {
-        let r = Math.random();
-        let newX, newY;
-        if (r < 0.5) {
-          newX = y;
-          newY = k * x;
-        } else {
-          newX = y;
-          newY = k * x + (1 - k);
-        }
-        x = newX;
-        y = newY;
-        let px = 200 + x * 150;
-        let py = 400 - y * 300;
-        if (i > 1000) {
-          if (r < 0.5) points1.push([px, py]);
-          else points2.push([px, py]);
-        }
-      }
-      drawIFS(k);
-      let d = modifiedHausdorff(points1, points2);
-      let type = d < 3 ? "Overlap" : d < 15 ? "Touching" : "Disconnected";
-      resultDiv.innerText = `k = ${k.toFixed(2)}\nInteraction: ${type}\nDistance: ${d.toFixed(2)}`;
-    }
-
-    kRange.addEventListener('input', update);
-    kValue.addEventListener('input', () => {
-      kRange.value = kValue.value;
-      update();
-    });
-
-    update();
   </script>
 </body>
+
 </html>

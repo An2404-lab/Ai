@@ -1,188 +1,168 @@
 <!DOCTYPE html>
-<html lang="en">
-
+<html lang="vi">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Bài Giảng Gradient – Đạo Hàm Riêng – Ma Trận Đạo Hàm</title>
-  <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
-  <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
-  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+  <meta charset="UTF-8">
+  <title>IFS Attractor với Trạng thái Tương tác</title>
   <style>
     body {
-      font-family: 'Roboto', sans-serif;
-      margin: 0;
-      padding: 0;
-      background-color: #f9f9f9;
-      font-size: 18px;
-      line-height: 1.6;
-    }
-
-    .container {
+      font-family: Arial, sans-serif;
+      background: #111;
+      color: white;
       display: flex;
-      height: 100vh;
-    }
-
-    .content, .video {
+      justify-content: center;
+      margin: 0;
       padding: 20px;
-      box-sizing: border-box;
-      transition: width 0.3s ease;
+      gap: 20px;
     }
-
-    .content {
-      width: 60%;
-      overflow-y: scroll;
-      background: white;
-      border-right: 2px solid #eee;
+    h2 {
+      margin-bottom: 15px;
+      font-size: 1.5em;
+      text-align: center;
     }
-
-    .video {
-      width: 40%;
+    #left-panel {
       display: flex;
       flex-direction: column;
-      justify-content: center;
       align-items: center;
-      background-color: #000;
     }
-
-    iframe {
-      width: 100%;
-      height: 90%;
-      border: none;
+    #controls {
+      margin: 10px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
     }
-
-    .buttons {
-      position: absolute;
-      top: 10px;
-      left: 10px;
-      z-index: 999;
+    input[type="range"] {
+      width: 300px;
+      accent-color: #4caf50;
     }
-
+    input[type="number"] {
+      width: 80px;
+      padding: 5px;
+      background: #333;
+      color: #fff;
+      border: 1px solid #555;
+      border-radius: 4px;
+    }
     button {
-      margin-right: 10px;
-      padding: 10px 15px;
-      font-size: 14px;
+      padding: 5px 10px;
+      background: #4caf50;
+      color: #fff;
       border: none;
-      border-radius: 5px;
-      background-color: #007BFF;
-      color: white;
+      border-radius: 4px;
       cursor: pointer;
     }
-
-    button:hover {
-      background-color: #0056b3;
+    canvas {
+      border: 1px solid white;
+      background: black;
+      box-shadow: 0 0 10px rgba(255, 255, 255, 0.2);
     }
-
-    h1, h2, h3 {
-      font-weight: 700;
+    #right-panel {
+      width: 400px;
+      max-height: 600px;
+      overflow-y: auto;
+      background: #222;
+      padding: 15px;
+      border-radius: 8px;
+      box-shadow: 0 0 10px rgba(255, 255, 255, 0.2);
+    }
+    #right-panel h3 {
+      margin-top: 0;
+      font-size: 1.2em;
+    }
+    #right-panel p {
+      margin: 5px 0;
+      font-size: 0.9em;
     }
   </style>
 </head>
-
 <body>
-  <div class="buttons">
-    <button onclick="toggleContent()">Ẩn/Hiện Bài Giảng</button>
-    <button onclick="toggleVideo()">Ẩn/Hiện Video</button>
+  <div id="left-panel">
+    <h2>IFS Attractor: f₁ (xanh lá), f₂ (đỏ)</h2>
+    <div id="controls">
+      <label for="kInput">k: </label>
+      <input type="number" id="kInput" value="0.5" step="0.01" min="-2" max="2">
+      <input type="range" id="kSlider" min="-2" max="2" step="0.01" value="0.5">
+      <button onclick="draw()">Vẽ lại</button>
+    </div>
+    <canvas id="canvas" width="600" height="600"></canvas>
   </div>
-  <div class="container">
-    <div class="content" id="content">
-      <h1>🎓 BÀI GIẢNG: GRADIENT – ĐẠO HÀM RIÊNG – MA TRẬN ĐẠO HÀM</h1>
-      <hr>
-      <h2>📘 1. Nhắc lại: Đạo hàm trong chương trình phổ thông</h2>
-      \[ f(x) = x^2 \Rightarrow f'(x) = 2x \]
-
-      <h2>📘 2. Gradient – Mở rộng lên hàm nhiều biến</h2>
-      \[ \nabla f = \left[ \frac{\partial f}{\partial x},\ \frac{\partial f}{\partial y} \right] \]
-
-      <h2>📘 3. Đạo hàm riêng – Công cụ để tính gradient</h2>
-      \[ \frac{\partial z}{\partial x} = 6x + y, \quad \frac{\partial z}{\partial y} = 2y + x \]
-
-      <h2>📘 4. Gradient – Vectơ đạo hàm riêng</h2>
-      \[ \nabla z = \left[ 6x + y,\ 2y + x \right] \]
-
-      <h2>📘 5. Đạo hàm riêng bậc hai</h2>
-      \[
-        \frac{\partial^2 z}{\partial x^2} = 6, \quad
-        \frac{\partial^2 z}{\partial y^2} = 2, \quad
-        \frac{\partial^2 z}{\partial x \partial y} = 1
-      \]
-
-      <h2>📘 6. Ma trận đạo hàm</h2>
-      <h3>✅ Ma trận Jacobian</h3>
-      \[
-      J =
-      \begin{bmatrix}
-      \frac{\partial z}{\partial x} & \frac{\partial z}{\partial y} \\
-      \end{bmatrix}
-      =
-      \begin{bmatrix}
-      6x + y & 2y + x
-      \end{bmatrix}
-      \]
-
-      <h3>✅ Ma trận Hessian</h3>
-      \[
-      H =
-      \begin{bmatrix}
-      \frac{\partial^2 z}{\partial x^2} & \frac{\partial^2 z}{\partial x \partial y} \\
-      \frac{\partial^2 z}{\partial y \partial x} & \frac{\partial^2 z}{\partial y^2}
-      \end{bmatrix}
-      =
-      \begin{bmatrix}
-      6 & 1 \\
-      1 & 2
-      \end{bmatrix}
-      \]
-
-      <h2>📘 7. Ứng dụng thực tế</h2>
-      \[ \theta := \theta - \alpha \nabla J(\theta) \]
-      \[ \theta := \theta - H^{-1} \nabla J(\theta) \]
-
-      <h2>🧠 Tóm tắt</h2>
-      <ul>
-        <li>Đạo hàm riêng: \( \frac{\partial z}{\partial x} = 6x + y \)</li>
-        <li>Gradient: \( \nabla z = [6x + y,\ 2y + x] \)</li>
-        <li>Jacobian: \( \begin{bmatrix} 6x + y & 2y + x \end{bmatrix} \)</li>
-        <li>Hessian: \( \begin{bmatrix} 6 & 1 \\ 1 & 2 \end{bmatrix} \)</li>
-      </ul>
-
-      <h2>📌 Bài tập gợi ý</h2>
-      \[ f(x, y) = x^3 + 3xy + y^2 \]
-      <ul>
-        <li>Tính gradient</li>
-        <li>Tính đạo hàm riêng bậc hai</li>
-        <li>Lập ma trận Hessian</li>
-      </ul>
-    </div>
-
-    <div class="video" id="video">
-      <h2 style="color: white; text-align: center;">🎥 Bài giảng YouTube</h2>
-      <iframe src="https://www.youtube.com/embed/YOUR_VIDEO_ID" allowfullscreen></iframe>
-    </div>
+  <div id="right-panel">
+    <h3>Trạng thái Tương tác</h3>
+    <div id="interaction-status"></div>
   </div>
 
   <script>
-    let contentVisible = true;
-    let videoVisible = true;
+    const canvas = document.getElementById("canvas");
+    const ctx = canvas.getContext("2d");
+    const kInput = document.getElementById("kInput");
+    const kSlider = document.getElementById("kSlider");
+    const statusDiv = document.getElementById("interaction-status");
 
-    function toggleContent() {
-      const content = document.getElementById('content');
-      const video = document.getElementById('video');
+    // Đồng bộ slider và input, cập nhật hình vẽ thời gian thực
+    kInput.addEventListener("input", () => {
+      let value = parseFloat(kInput.value);
+      if (!isNaN(value) && value >= -2 && value <= 2) {
+        kSlider.value = value;
+        draw();
+      }
+    });
 
-      contentVisible = !contentVisible;
-      content.style.display = contentVisible ? 'block' : 'none';
-      video.style.width = contentVisible ? '40%' : '100%';
+    kSlider.addEventListener("input", () => {
+      kInput.value = parseFloat(kSlider.value).toFixed(2);
+      draw();
+    });
+
+    function transform(x, y, k, which) {
+      let newX = y;
+      let newY = k * x;
+      if (which === 2) {
+        newY += 1 - k;
+      }
+      return [newX, newY];
     }
 
-    function toggleVideo() {
-      const content = document.getElementById('content');
-      const video = document.getElementById('video');
+    function draw() {
+      const k = parseFloat(kInput.value);
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-      videoVisible = !videoVisible;
-      video.style.display = videoVisible ? 'flex' : 'none';
-      content.style.width = videoVisible ? '60%' : '100%';
+      let x = 0, y = 0;
+      const width = canvas.width;
+      const height = canvas.height;
+
+      // Ánh xạ không gian [-1.5, 1.5] x [-1.5, 1.5] lên canvas
+      function toCanvas(px, py) {
+        return [
+          width / 2 + px * width / 3,
+          height / 2 - py * height / 3
+        ];
+      }
+
+      for (let i = 0; i < 100000; i++) {
+        let which = Math.random() < 0.5 ? 1 : 2;
+        [x, y] = transform(x, y, k, which);
+        if (i > 100) { // Bỏ qua vài điểm đầu
+          const [cx, cy] = toCanvas(x, y);
+          ctx.fillStyle = which === 1 ? "lime" : "red";
+          ctx.fillRect(cx, cy, 1, 1);
+        }
+      }
+
+      // Xác định trạng thái tương tác dựa trên giá trị k
+      let status = "Disconnected";
+      if (k === 0.5 || k === -0.5) {
+        status = "Touching";
+      } else if (k >= -1 && k < -0.5 || k > 0.5 && k <= 2) {
+        status = "Overlap";
+      } else if (k >= -0.49 && k <= 0.49) {
+        status = "Disconnected";
+      }
+      statusDiv.innerHTML = `
+        <p>Giá trị k = ${k.toFixed(2)}</p>
+        <p><strong>Trạng thái tương tác: ${status}</strong></p>
+        <p>(Dựa trên quan sát trực quan của hình vẽ)</p>
+      `;
     }
+
+    draw();
   </script>
 </body>
-
 </html>

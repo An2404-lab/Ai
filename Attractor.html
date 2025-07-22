@@ -2,85 +2,125 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>IFS Attractor với tham số k</title>
+  <title>IFS Attractor with Interaction Type</title>
   <style>
     body {
+      display: flex;
+      flex-direction: row;
       font-family: sans-serif;
-      background: #111;
-      color: white;
-      text-align: center;
+      margin: 0;
+      padding: 0;
     }
     canvas {
-      border: 1px solid white;
-      background: black;
+      border: 1px solid black;
     }
-    #controls {
-      margin: 10px;
-    }
-    input[type="range"] {
+    .controls {
+      padding: 10px;
       width: 300px;
+    }
+    #result {
+      margin-top: 20px;
+      padding: 10px;
+      background-color: #f2f2f2;
+      border-radius: 5px;
     }
   </style>
 </head>
 <body>
-  <h2>IFS Attractor: f₁ màu xanh lá, f₂ màu đỏ</h2>
-  <div id="controls">
-    <label>k: <input type="number" id="kInput" value="0.5" step="0.01" min="-2" max="2"></label>
-    <input type="range" id="kSlider" min="-2" max="2" step="0.01" value="0.5">
-    <button onclick="draw()">Vẽ lại</button>
+  <div class="controls">
+    <label for="kRange">Tham số k:</label>
+    <input type="range" id="kRange" min="0" max="1" step="0.01" value="0.5"><br>
+    <input type="number" id="kValue" min="0" max="1" step="0.01" value="0.5"><br>
+    <div id="result">Đang tính toán...</div>
   </div>
-  <canvas id="canvas" width="600" height="600"></canvas>
+  <canvas id="canvas" width="400" height="400"></canvas>
 
   <script>
-    const canvas = document.getElementById("canvas");
-    const ctx = canvas.getContext("2d");
-    const kInput = document.getElementById("kInput");
-    const kSlider = document.getElementById("kSlider");
+    const canvas = document.getElementById('canvas');
+    const ctx = canvas.getContext('2d');
+    const kRange = document.getElementById('kRange');
+    const kValue = document.getElementById('kValue');
+    const resultDiv = document.getElementById('result');
 
-    // Đồng bộ slider và input
-    kInput.addEventListener("input", () => kSlider.value = kInput.value);
-    kSlider.addEventListener("input", () => {
-      kInput.value = kSlider.value;
-    });
-
-    function transform(x, y, k, which) {
-      // Ma trận: [0 1; k 0]
-      let newX = y;
-      let newY = k * x;
-      if (which === 2) {
-        newY += 1 - k;
+    function drawIFS(k) {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      let points = [];
+      let x = 0, y = 0;
+      for (let i = 0; i < 100000; i++) {
+        let r = Math.random();
+        let newX, newY;
+        if (r < 0.5) {
+          newX = y;
+          newY = k * x;
+          ctx.fillStyle = 'green';
+        } else {
+          newX = y;
+          newY = k * x + (1 - k);
+          ctx.fillStyle = 'red';
+        }
+        x = newX;
+        y = newY;
+        let px = 200 + x * 150;
+        let py = 400 - y * 300;
+        ctx.fillRect(px, py, 1, 1);
+        if (i > 1000) points.push([px, py]);
       }
-      return [newX, newY];
+      return points;
     }
 
-    function draw() {
-      const k = parseFloat(kInput.value);
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-      let x = 0, y = 0;
-      const width = canvas.width;
-      const height = canvas.height;
-
-      // Ánh xạ không gian [-1.5, 1.5] x [-1.5, 1.5] lên canvas
-      function toCanvas(px, py) {
-        return [
-          width / 2 + px * width / 3,
-          height / 2 - py * height / 3
-        ];
+    function modifiedHausdorff(A, B) {
+      function meanMinDistance(P, Q) {
+        return P.reduce((sum, p) => {
+          let minDist = Infinity;
+          for (let q of Q) {
+            const dx = p[0] - q[0];
+            const dy = p[1] - q[1];
+            const dist = Math.sqrt(dx * dx + dy * dy);
+            if (dist < minDist) minDist = dist;
+          }
+          return sum + minDist;
+        }, 0) / P.length;
       }
+      return Math.max(meanMinDistance(A, B), meanMinDistance(B, A));
+    }
 
+    function update() {
+      const k = parseFloat(kRange.value);
+      kValue.value = k;
+      let points1 = [], points2 = [];
+      let x = 0, y = 0;
       for (let i = 0; i < 100000; i++) {
-        let which = Math.random() < 0.5 ? 1 : 2;
-        [x, y] = transform(x, y, k, which);
-        if (i > 100) { // Bỏ qua vài điểm đầu
-          const [cx, cy] = toCanvas(x, y);
-          ctx.fillStyle = which === 1 ? "lime" : "red";
-          ctx.fillRect(cx, cy, 1, 1);
+        let r = Math.random();
+        let newX, newY;
+        if (r < 0.5) {
+          newX = y;
+          newY = k * x;
+        } else {
+          newX = y;
+          newY = k * x + (1 - k);
+        }
+        x = newX;
+        y = newY;
+        let px = 200 + x * 150;
+        let py = 400 - y * 300;
+        if (i > 1000) {
+          if (r < 0.5) points1.push([px, py]);
+          else points2.push([px, py]);
         }
       }
+      drawIFS(k);
+      let d = modifiedHausdorff(points1, points2);
+      let type = d < 3 ? "Overlap" : d < 15 ? "Touching" : "Disconnected";
+      resultDiv.innerText = `k = ${k.toFixed(2)}\nInteraction: ${type}\nDistance: ${d.toFixed(2)}`;
     }
 
-    draw();
+    kRange.addEventListener('input', update);
+    kValue.addEventListener('input', () => {
+      kRange.value = kValue.value;
+      update();
+    });
+
+    update();
   </script>
 </body>
 </html>

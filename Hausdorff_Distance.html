@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <title>IFS Attractor với Hausdorff Distance</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #1a1a1a;
+      color: #fff;
+      display: flex;
+      justify-content: center;
+      margin: 0;
+      padding: 20px;
+      gap: 20px;
+    }
+    h2 {
+      margin-bottom: 15px;
+      font-size: 1.5em;
+    }
+    #left-panel {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    #controls {
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    input[type="range"] {
+      width: 300px;
+      accent-color: #4caf50;
+    }
+    input[type="number"] {
+      width: 80px;
+      padding: 5px;
+      background: #333;
+      color: #fff;
+      border: 1px solid #555;
+      border-radius: 4px;
+    }
+    button {
+      padding: 5px 10px;
+      background: #4caf50;
+      color: #fff;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    canvas {
+      border: 1px solid #fff;
+      background: #000;
+      box-shadow: 0 0 10px rgba(255, 255, 255, 0.2);
+    }
+    #right-panel {
+      width: 400px;
+      max-height: 600px;
+      overflow-y: auto;
+      background: #222;
+      padding: 15px;
+      border-radius: 8px;
+      box-shadow: 0 0 10px rgba(255, 255, 255, 0.2);
+    }
+    #right-panel h3 {
+      margin-top: 0;
+      font-size: 1.2em;
+    }
+    #right-panel p {
+      margin: 5px 0;
+      font-size: 0.9em;
+    }
+  </style>
+</head>
+<body>
+  <div id="left-panel">
+    <h2>IFS Attractor: f₁ (xanh lá), f₂ (đỏ)</h2>
+    <div id="controls">
+      <label for="kInput">k: </label>
+      <input type="number" id="kInput" value="0.5" step="0.01" min="-2" max="2">
+      <input type="range" id="kSlider" min="-2" max="2" step="0.01" value="0.5">
+      <button onclick="draw()">Vẽ lại</button>
+    </div>
+    <canvas id="canvas" width="600" height="600"></canvas>
+  </div>
+  <div id="right-panel">
+    <h3>Các bước Hausdorff Distance</h3>
+    <div id="algorithm-steps"></div>
+  </div>
+
+  <script>
+    const canvas = document.getElementById("canvas");
+    const ctx = canvas.getContext("2d");
+    const kInput = document.getElementById("kInput");
+    const kSlider = document.getElementById("kSlider");
+    const stepsDiv = document.getElementById("algorithm-steps");
+
+    let points = [[0, 0]];
+    const maxPoints = 100000; // Giống code mẫu để hình vẽ đậm đặc
+
+    kInput.addEventListener("input", () => {
+      let value = parseFloat(kInput.value);
+      if (!isNaN(value) && value >= -2 && value <= 2) {
+        kSlider.value = value;
+        points = [[0, 0]];
+        draw();
+      }
+    });
+
+    kSlider.addEventListener("input", () => {
+      kInput.value = parseFloat(kSlider.value).toFixed(2);
+      points = [[0, 0]];
+      draw();
+    });
+
+    function transform(x, y, k, which) {
+      let newX = y;
+      let newY = k * x;
+      if (which === 2) {
+        newY += 1 - k;
+      }
+      return [newX, newY];
+    }
+
+    function toCanvas(px, py) {
+      const width = canvas.width;
+      const height = canvas.height;
+      return [
+        width / 2 + px * width / 3,
+        height / 2 - py * height / 3
+      ];
+    }
+
+    function hausdorffDistance(greenPoints, redPoints) {
+      // Bước 1: Tính giới hạn của point clouds
+      let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
+      greenPoints.forEach(([x, y]) => {
+        minX = Math.min(minX, x); maxX = Math.max(maxX, x);
+        minY = Math.min(minY, y); maxY = Math.max(maxY, y);
+      });
+      redPoints.forEach(([x, y]) => {
+        minX = Math.min(minX, x); maxX = Math.max(maxX, x);
+        minY = Math.min(minY, y); maxY = Math.max(maxY, y);
+      });
+      const scale = Math.max(maxX - minX, maxY - minY) || 1;
+      const epsilon1 = 0.05 * scale; // Ngưỡng cho overlap
+      const epsilon2 = 0.3 * scale;  // Ngưỡng cho touching/disconnected
+
+      let step1 = `Bước 1: Tính giới hạn\n`;
+      step1 += `  - minX = ${minX.toFixed(2)}, maxX = ${maxX.toFixed(2)}, minY = ${minY.toFixed(2)}, maxY = ${maxY.toFixed(2)}\n`;
+      step1 += `  - scale = ${scale.toFixed(4)}, ε₁ = ${epsilon1.toFixed(4)}, ε₂ = ${epsilon2.toFixed(4)}`;
+
+      // Bước 2: Lấy mẫu điểm để tính toán
+      const sampleSize = Math.min(100, greenPoints.length, redPoints.length);
+      const greenSample = greenPoints.slice(0, sampleSize);
+      const redSample = redPoints.slice(0, sampleSize);
+      let step2 = `Bước 2: Lấy mẫu điểm\n`;
+      step2 += `  - Số điểm mẫu xanh: ${greenSample.length}\n`;
+      step2 += `  - Số điểm mẫu đỏ: ${redSample.length}`;
+
+      // Bước 3: Tính khoảng cách Hausdorff một chiều
+      let hAB = -Infinity;
+      greenSample.forEach(p1 => {
+        let minDist = Infinity;
+        redSample.forEach(p2 => {
+          const dist = Math.sqrt((p1[0] - p2[0]) ** 2 + (p1[1] - p2[1]) ** 2);
+          minDist = Math.min(minDist, dist);
+        });
+        hAB = Math.max(hAB, minDist);
+      });
+
+      let hBA = -Infinity;
+      redSample.forEach(p2 => {
+        let minDist = Infinity;
+        greenSample.forEach(p1 => {
+          const dist = Math.sqrt((p1[0] - p2[0]) ** 2 + (p1[1] - p2[1]) ** 2);
+          minDist = Math.min(minDist, dist);
+        });
+        hBA = Math.max(hBA, minDist);
+      });
+
+      // Bước 4: Tính khoảng cách Hausdorff hai chiều
+      const hausdorffDist = Math.max(hAB, hBA);
+      let step3 = `Bước 3: Tính khoảng cách Hausdorff\n`;
+      step3 += `  - h(A,B) = ${hAB.toFixed(4)}\n`;
+      step3 += `  - h(B,A) = ${hBA.toFixed(4)}\n`;
+      step3 += `  - H(A,B) = ${hausdorffDist.toFixed(4)}`;
+
+      // Bước 5: Phân loại trạng thái
+      let status = "Disconnected";
+      if (hausdorffDist <= epsilon1) status = "Overlap";
+      else if (hausdorffDist <= epsilon2) status = "Touching";
+      let step4 = `Bước 4: Phân loại trạng thái\n`;
+      step4 += `  - Trạng thái: ${status}`;
+
+      return [step1, step2, step3, step4, "", status];
+    }
+
+    function draw() {
+      const k = parseFloat(kInput.value);
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      let x = 0, y = 0;
+      points = [[x, y]];
+      for (let i = 0; i < maxPoints; i++) {
+        let which = Math.random() < 0.5 ? 1 : 2;
+        [x, y] = transform(x, y, k, which);
+        points.push([x, y]);
+      }
+
+      for (let i = 100; i < points.length; i++) {
+        const [x, y] = points[i];
+        const [cx, cy] = toCanvas(x, y);
+        ctx.fillStyle = (i % 2 === 0) ? "lime" : "red";
+        ctx.fillRect(cx, cy, 1, 1);
+      }
+
+      const greenPoints = points.filter((_, i) => i % 2 === 0 && i >= 100);
+      const redPoints = points.filter((_, i) => i % 2 !== 0 && i >= 100);
+      const [step1, step2, step3, step4, step5, status] = hausdorffDistance(greenPoints, redPoints);
+      stepsDiv.innerHTML = `
+        <p>${step1.replace(/\n/g, '<br>')}</p>
+        <p>${step2.replace(/\n/g, '<br>')}</p>
+        <p>${step3.replace(/\n/g, '<br>')}</p>
+        <p>${step4.replace(/\n/g, '<br>')}</p>
+        <p><strong>Kết luận (k = ${k.toFixed(2)}): ${status}</strong></p>
+      `;
+    }
+
+    draw();
+  </script>
+</body>
+</html>

@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Bài giảng Gradient</title>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+  <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+  <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+    body {
+      margin: 0;
+      font-family: 'Roboto', sans-serif;
+      display: flex;
+      height: 100vh;
+      font-size: 18px;
+      background-color: #f3f6f9;
+      color: #2c3e50;
+    }
+    .left, .right {
+      width: 50%;
+      padding: 24px;
+      overflow-y: auto;
+    }
+    .left {
+      background-color: #ffffff;
+      border-right: 1px solid #ccc;
+    }
+    .right {
+      background-color: #fafafa;
+    }
+    h1, h2, h3 {
+      color: #1a237e;
+    }
+    code, pre {
+      background-color: #eceff1;
+      padding: 12px;
+      border-radius: 6px;
+      font-size: 17px;
+      overflow-x: auto;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 1em 0;
+      font-size: 17px;
+    }
+    th, td {
+      border: 1px solid #bbb;
+      padding: 10px;
+      text-align: center;
+    }
+    th {
+      background-color: #e3f2fd;
+    }
+    iframe {
+      width: 100%;
+      height: 90%;
+      border: none;
+      border-radius: 8px;
+    }
+    .section-title {
+      text-align: center;
+      font-size: 1.5em;
+      font-weight: bold;
+      background-color: #bbdefb;
+      padding: 14px;
+      border-radius: 8px;
+      margin-bottom: 20px;
+    }
+    ul li {
+      margin-bottom: 8px;
+    }
+  </style>
+</head>
+<body>
+  <div class="left">
+    <div class="section-title">📘 BÀI GIẢNG TOÁN: GRADIENT & ĐẠO HÀM RIÊNG</div>
+    <div id="lecture-content">
+      <h2>1. Nhắc lại đạo hàm phổ thông</h2>
+      <ul>
+        <li>Hàm một biến: đạo hàm đo tốc độ thay đổi: \( f'(x) = \frac{df}{dx} \)</li>
+        <li>Ví dụ: \( f(x) = x^2 \Rightarrow f'(x) = 2x \)</li>
+      </ul>
+
+      <h2>2. Gradient là gì?</h2>
+      <p>Gradient của hàm nhiều biến là véc-tơ chứa đạo hàm riêng của từng biến:</p>
+      <p>\[ \nabla f = \left[\frac{\partial f}{\partial x}, \frac{\partial f}{\partial y} \right] \]</p>
+      <p><strong>Ý nghĩa:</strong> Hướng tăng nhanh nhất của hàm số.</p>
+
+      <h2>3. Đạo hàm riêng</h2>
+      <p>Cho hàm: \( z = 3x^2 + y^2 + xy \)</p>
+      <ul>
+        <li>\( \frac{\partial z}{\partial x} = 6x + y \)</li>
+        <li>\( \frac{\partial z}{\partial y} = 2y + x \)</li>
+      </ul>
+      <p>Gradient: \( \nabla z = [6x + y,\ 2y + x] \)</p>
+
+      <h2>4. Đạo hàm riêng bậc hai</h2>
+      <table>
+        <tr><th>Loại</th><th>Ký hiệu</th><th>Giá trị</th></tr>
+        <tr><td>\( \frac{\partial^2 z}{\partial x^2} \)</td><td>\(6\)</td><td>Bậc hai theo x</td></tr>
+        <tr><td>\( \frac{\partial^2 z}{\partial y^2} \)</td><td>\(2\)</td><td>Bậc hai theo y</td></tr>
+        <tr><td>\( \frac{\partial^2 z}{\partial x \partial y} \)</td><td>\(1\)</td><td>Lẫn lộn</td></tr>
+      </table>
+
+      <h2>5. Ma trận đạo hàm</h2>
+      <h3>Ma trận Jacobian:</h3>
+      <pre>
+J = \left[
+  \begin{array}{cc}
+    6 & 1 \\
+    1 & 2
+  \end{array}
+\right]
+      </pre>
+
+      <h3>Ma trận Hessian:</h3>
+      <pre>
+H = \left[
+  \begin{array}{cc}
+    \frac{\partial^2 z}{\partial x^2} & \frac{\partial^2 z}{\partial x \partial y} \\
+    \frac{\partial^2 z}{\partial y \partial x} & \frac{\partial^2 z}{\partial y^2}
+  \end{array}
+\right]
+= \left[
+  \begin{array}{cc}
+    6 & 1 \\
+    1 & 2
+  \end{array}
+\right]
+      </pre>
+
+      <h2>6. Ứng dụng trong học máy</h2>
+      <ul>
+        <li>Gradient Descent: \( \theta := \theta - \alpha \nabla J(\theta) \)</li>
+        <li>Newton: \( \theta := \theta - H^{-1} \nabla J(\theta) \)</li>
+      </ul>
+
+      <h2>🧠 Bài tập</h2>
+      <p>Cho hàm: \( f(x, y) = x^3 + 3xy + y^2 \)</p>
+      <ul>
+        <li>Tính \( \nabla f \)</li>
+        <li>Tính Hessian \( H_f(x, y) \)</li>
+      </ul>
+    </div>
+  </div>
+  <div class="right">
+    <div class="section-title">📺 VIDEO YOUTUBE</div>
+    <iframe src="https://www.youtube.com/embed/0g3Qc4rFcjA" allowfullscreen></iframe>
+  </div>
+</body>
+</html>

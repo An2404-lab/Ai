@@ -30,14 +30,14 @@
     }
 
     .content {
-      width: 60%;
+      width: 50%;
       overflow-y: scroll;
       background: white;
       border-right: 2px solid #eee;
     }
 
     .video {
-      width: 40%;
+      width: 50%;
       display: flex;
       flex-direction: column;
       justify-content: center;
@@ -88,27 +88,43 @@
     <div class="content" id="content">
       <h1>🎓 BÀI GIẢNG: GRADIENT – ĐẠO HÀM RIÊNG – MA TRẬN ĐẠO HÀM</h1>
       <hr>
+
       <h2>📘 1. Nhắc lại: Đạo hàm trong chương trình phổ thông</h2>
+      <p>Ở cấp 3, đạo hàm được ký hiệu là \( \frac{df}{dx} \) hoặc \( f' \) theo biến x.<br>
+      Đây là đạo hàm của một hàm \( f \) theo một biến \( x \).</p>
       \[ f(x) = x^2 \Rightarrow f'(x) = 2x \]
 
       <h2>📘 2. Gradient – Mở rộng lên hàm nhiều biến</h2>
+      <p>Lên đại học, khái niệm "đạo hàm" được nâng cấp thành "gradient".<br>
+      Gradient được sử dụng cho hàm nhiều biến, ví dụ \( Z = f(x,y) \).<br>
+      Gradient là một vectơ có ký hiệu là \( \nabla f \), với các thành phần là đạo hàm riêng:</p>
       \[ \nabla f = \left[ \frac{\partial f}{\partial x},\ \frac{\partial f}{\partial y} \right] \]
 
       <h2>📘 3. Đạo hàm riêng – Công cụ để tính gradient</h2>
-      \[ \frac{\partial z}{\partial x} = 6x + y, \quad \frac{\partial z}{\partial y} = 2y + x \]
+      <p>Khi đạo hàm một hàm nhiều biến như \( z = f(x, y) \), cần xác định biến nào được đạo hàm.<br>
+      Khi đạo hàm theo một biến (ví dụ x), các biến khác (y) được giữ cố định như hằng số.</p>
+      <p>Ví dụ với hàm \( z = 3x^2 + y^2 + xy \):</p>
+      <ul>
+        <li>\( \frac{\partial z}{\partial x} = 6x + y \)</li>
+        <li>\( \frac{\partial z}{\partial y} = 2y + x \)</li>
+      </ul>
 
       <h2>📘 4. Gradient – Vectơ đạo hàm riêng</h2>
+      <p>Từ các đạo hàm riêng, gradient của \( z \) là:</p>
       \[ \nabla z = \left[ 6x + y,\ 2y + x \right] \]
 
       <h2>📘 5. Đạo hàm riêng bậc hai</h2>
-      \[
-        \frac{\partial^2 z}{\partial x^2} = 6, \quad
-        \frac{\partial^2 z}{\partial y^2} = 2, \quad
-        \frac{\partial^2 z}{\partial x \partial y} = 1
-      \]
+      <p>Đạo hàm một lần nữa sẽ ra đạo hàm bậc hai. Có bốn loại:</p>
+      <ul>
+        <li>\( \frac{\partial^2 z}{\partial x^2} = 6 \)</li>
+        <li>\( \frac{\partial^2 z}{\partial y^2} = 2 \)</li>
+        <li>\( \frac{\partial^2 z}{\partial x \partial y} = 1 \)</li>
+        <li>\( \frac{\partial^2 z}{\partial y \partial x} = 1 \)</li>
+      </ul>
 
       <h2>📘 6. Ma trận đạo hàm</h2>
       <h3>✅ Ma trận Jacobian</h3>
+      <p>Jacobian là ma trận chứa đạo hàm riêng bậc nhất:</p>
       \[
       J =
       \begin{bmatrix}
@@ -121,6 +137,7 @@
       \]
 
       <h3>✅ Ma trận Hessian</h3>
+      <p>Hessian là ma trận chứa đạo hàm riêng bậc hai:</p>
       \[
       H =
       \begin{bmatrix}
@@ -135,6 +152,7 @@
       \]
 
       <h2>📘 7. Ứng dụng thực tế</h2>
+      <p>Gradient và Hessian được sử dụng trong Machine Learning, đặc biệt trong tối ưu hóa:</p>
       \[ \theta := \theta - \alpha \nabla J(\theta) \]
       \[ \theta := \theta - H^{-1} \nabla J(\theta) \]
 
@@ -147,7 +165,7 @@
       </ul>
 
       <h2>📌 Bài tập gợi ý</h2>
-      \[ f(x, y) = x^3 + 3xy + y^2 \]
+      <p>Cho hàm \( f(x, y) = x^3 + 3xy + y^2 \):</p>
       <ul>
         <li>Tính gradient</li>
         <li>Tính đạo hàm riêng bậc hai</li>
@@ -157,7 +175,7 @@
 
     <div class="video" id="video">
       <h2 style="color: white; text-align: center;">🎥 Bài giảng YouTube</h2>
-      <iframe src="https://www.youtube.com/embed/0g3Qc4rFcjA" allowfullscreen></iframe>
+      <iframe src="https://www.youtube.com/embed/0g3Qc4rFcjA" allowfullscreen" allowfullscreen></iframe>
     </div>
   </div>
 
@@ -171,7 +189,7 @@
 
       contentVisible = !contentVisible;
       content.style.display = contentVisible ? 'block' : 'none';
-      video.style.width = contentVisible ? '40%' : '100%';
+      video.style.width = contentVisible ? '50%' : '100%';
     }
 
     function toggleVideo() {
@@ -180,7 +198,7 @@
 
       videoVisible = !videoVisible;
       video.style.display = videoVisible ? 'flex' : 'none';
-      content.style.width = videoVisible ? '60%' : '100%';
+      content.style.width = videoVisible ? '50%' : '100%';
     }
   </script>
 </body>

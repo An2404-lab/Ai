@@ -1,156 +1,188 @@
 <!DOCTYPE html>
-<html lang="vi">
+<html lang="en">
+
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Bài giảng Gradient</title>
-  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+  <title>Bài Giảng Gradient – Đạo Hàm Riêng – Ma Trận Đạo Hàm</title>
   <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
   <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
   <style>
-    * {
-      box-sizing: border-box;
-    }
     body {
-      margin: 0;
       font-family: 'Roboto', sans-serif;
+      margin: 0;
+      padding: 0;
+      background-color: #f9f9f9;
+      font-size: 18px;
+      line-height: 1.6;
+    }
+
+    .container {
       display: flex;
       height: 100vh;
-      font-size: 18px;
-      background-color: #f3f6f9;
-      color: #2c3e50;
     }
-    .left, .right {
-      width: 50%;
-      padding: 24px;
-      overflow-y: auto;
+
+    .content, .video {
+      padding: 20px;
+      box-sizing: border-box;
+      transition: width 0.3s ease;
     }
-    .left {
-      background-color: #ffffff;
-      border-right: 1px solid #ccc;
+
+    .content {
+      width: 60%;
+      overflow-y: scroll;
+      background: white;
+      border-right: 2px solid #eee;
     }
-    .right {
-      background-color: #fafafa;
+
+    .video {
+      width: 40%;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      background-color: #000;
     }
-    h1, h2, h3 {
-      color: #1a237e;
-    }
-    code, pre {
-      background-color: #eceff1;
-      padding: 12px;
-      border-radius: 6px;
-      font-size: 17px;
-      overflow-x: auto;
-    }
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      margin: 1em 0;
-      font-size: 17px;
-    }
-    th, td {
-      border: 1px solid #bbb;
-      padding: 10px;
-      text-align: center;
-    }
-    th {
-      background-color: #e3f2fd;
-    }
+
     iframe {
       width: 100%;
       height: 90%;
       border: none;
-      border-radius: 8px;
     }
-    .section-title {
-      text-align: center;
-      font-size: 1.5em;
-      font-weight: bold;
-      background-color: #bbdefb;
-      padding: 14px;
-      border-radius: 8px;
-      margin-bottom: 20px;
+
+    .buttons {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      z-index: 999;
     }
-    ul li {
-      margin-bottom: 8px;
+
+    button {
+      margin-right: 10px;
+      padding: 10px 15px;
+      font-size: 14px;
+      border: none;
+      border-radius: 5px;
+      background-color: #007BFF;
+      color: white;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background-color: #0056b3;
+    }
+
+    h1, h2, h3 {
+      font-weight: 700;
     }
   </style>
 </head>
+
 <body>
-  <div class="left">
-    <div class="section-title">📘 BÀI GIẢNG TOÁN: GRADIENT & ĐẠO HÀM RIÊNG</div>
-    <div id="lecture-content">
-      <h2>1. Nhắc lại đạo hàm phổ thông</h2>
+  <div class="buttons">
+    <button onclick="toggleContent()">Ẩn/Hiện Bài Giảng</button>
+    <button onclick="toggleVideo()">Ẩn/Hiện Video</button>
+  </div>
+  <div class="container">
+    <div class="content" id="content">
+      <h1>🎓 BÀI GIẢNG: GRADIENT – ĐẠO HÀM RIÊNG – MA TRẬN ĐẠO HÀM</h1>
+      <hr>
+      <h2>📘 1. Nhắc lại: Đạo hàm trong chương trình phổ thông</h2>
+      \[ f(x) = x^2 \Rightarrow f'(x) = 2x \]
+
+      <h2>📘 2. Gradient – Mở rộng lên hàm nhiều biến</h2>
+      \[ \nabla f = \left[ \frac{\partial f}{\partial x},\ \frac{\partial f}{\partial y} \right] \]
+
+      <h2>📘 3. Đạo hàm riêng – Công cụ để tính gradient</h2>
+      \[ \frac{\partial z}{\partial x} = 6x + y, \quad \frac{\partial z}{\partial y} = 2y + x \]
+
+      <h2>📘 4. Gradient – Vectơ đạo hàm riêng</h2>
+      \[ \nabla z = \left[ 6x + y,\ 2y + x \right] \]
+
+      <h2>📘 5. Đạo hàm riêng bậc hai</h2>
+      \[
+        \frac{\partial^2 z}{\partial x^2} = 6, \quad
+        \frac{\partial^2 z}{\partial y^2} = 2, \quad
+        \frac{\partial^2 z}{\partial x \partial y} = 1
+      \]
+
+      <h2>📘 6. Ma trận đạo hàm</h2>
+      <h3>✅ Ma trận Jacobian</h3>
+      \[
+      J =
+      \begin{bmatrix}
+      \frac{\partial z}{\partial x} & \frac{\partial z}{\partial y} \\
+      \end{bmatrix}
+      =
+      \begin{bmatrix}
+      6x + y & 2y + x
+      \end{bmatrix}
+      \]
+
+      <h3>✅ Ma trận Hessian</h3>
+      \[
+      H =
+      \begin{bmatrix}
+      \frac{\partial^2 z}{\partial x^2} & \frac{\partial^2 z}{\partial x \partial y} \\
+      \frac{\partial^2 z}{\partial y \partial x} & \frac{\partial^2 z}{\partial y^2}
+      \end{bmatrix}
+      =
+      \begin{bmatrix}
+      6 & 1 \\
+      1 & 2
+      \end{bmatrix}
+      \]
+
+      <h2>📘 7. Ứng dụng thực tế</h2>
+      \[ \theta := \theta - \alpha \nabla J(\theta) \]
+      \[ \theta := \theta - H^{-1} \nabla J(\theta) \]
+
+      <h2>🧠 Tóm tắt</h2>
       <ul>
-        <li>Hàm một biến: đạo hàm đo tốc độ thay đổi: \( f'(x) = \frac{df}{dx} \)</li>
-        <li>Ví dụ: \( f(x) = x^2 \Rightarrow f'(x) = 2x \)</li>
+        <li>Đạo hàm riêng: \( \frac{\partial z}{\partial x} = 6x + y \)</li>
+        <li>Gradient: \( \nabla z = [6x + y,\ 2y + x] \)</li>
+        <li>Jacobian: \( \begin{bmatrix} 6x + y & 2y + x \end{bmatrix} \)</li>
+        <li>Hessian: \( \begin{bmatrix} 6 & 1 \\ 1 & 2 \end{bmatrix} \)</li>
       </ul>
 
-      <h2>2. Gradient là gì?</h2>
-      <p>Gradient của hàm nhiều biến là véc-tơ chứa đạo hàm riêng của từng biến:</p>
-      <p>\[ \nabla f = \left[\frac{\partial f}{\partial x}, \frac{\partial f}{\partial y} \right] \]</p>
-      <p><strong>Ý nghĩa:</strong> Hướng tăng nhanh nhất của hàm số.</p>
-
-      <h2>3. Đạo hàm riêng</h2>
-      <p>Cho hàm: \( z = 3x^2 + y^2 + xy \)</p>
+      <h2>📌 Bài tập gợi ý</h2>
+      \[ f(x, y) = x^3 + 3xy + y^2 \]
       <ul>
-        <li>\( \frac{\partial z}{\partial x} = 6x + y \)</li>
-        <li>\( \frac{\partial z}{\partial y} = 2y + x \)</li>
-      </ul>
-      <p>Gradient: \( \nabla z = [6x + y,\ 2y + x] \)</p>
-
-      <h2>4. Đạo hàm riêng bậc hai</h2>
-      <table>
-        <tr><th>Loại</th><th>Ký hiệu</th><th>Giá trị</th></tr>
-        <tr><td>\( \frac{\partial^2 z}{\partial x^2} \)</td><td>\(6\)</td><td>Bậc hai theo x</td></tr>
-        <tr><td>\( \frac{\partial^2 z}{\partial y^2} \)</td><td>\(2\)</td><td>Bậc hai theo y</td></tr>
-        <tr><td>\( \frac{\partial^2 z}{\partial x \partial y} \)</td><td>\(1\)</td><td>Lẫn lộn</td></tr>
-      </table>
-
-      <h2>5. Ma trận đạo hàm</h2>
-      <h3>Ma trận Jacobian:</h3>
-      <pre>
-J = \left[
-  \begin{array}{cc}
-    6 & 1 \\
-    1 & 2
-  \end{array}
-\right]
-      </pre>
-
-      <h3>Ma trận Hessian:</h3>
-      <pre>
-H = \left[
-  \begin{array}{cc}
-    \frac{\partial^2 z}{\partial x^2} & \frac{\partial^2 z}{\partial x \partial y} \\
-    \frac{\partial^2 z}{\partial y \partial x} & \frac{\partial^2 z}{\partial y^2}
-  \end{array}
-\right]
-= \left[
-  \begin{array}{cc}
-    6 & 1 \\
-    1 & 2
-  \end{array}
-\right]
-      </pre>
-
-      <h2>6. Ứng dụng trong học máy</h2>
-      <ul>
-        <li>Gradient Descent: \( \theta := \theta - \alpha \nabla J(\theta) \)</li>
-        <li>Newton: \( \theta := \theta - H^{-1} \nabla J(\theta) \)</li>
-      </ul>
-
-      <h2>🧠 Bài tập</h2>
-      <p>Cho hàm: \( f(x, y) = x^3 + 3xy + y^2 \)</p>
-      <ul>
-        <li>Tính \( \nabla f \)</li>
-        <li>Tính Hessian \( H_f(x, y) \)</li>
+        <li>Tính gradient</li>
+        <li>Tính đạo hàm riêng bậc hai</li>
+        <li>Lập ma trận Hessian</li>
       </ul>
     </div>
+
+    <div class="video" id="video">
+      <h2 style="color: white; text-align: center;">🎥 Bài giảng YouTube</h2>
+      <iframe src="https://www.youtube.com/embed/0g3Qc4rFcjA" allowfullscreen></iframe>
+    </div>
   </div>
-  <div class="right">
-    <div class="section-title">📺 VIDEO YOUTUBE</div>
-    <iframe src="https://www.youtube.com/embed/0g3Qc4rFcjA" allowfullscreen></iframe>
-  </div>
+
+  <script>
+    let contentVisible = true;
+    let videoVisible = true;
+
+    function toggleContent() {
+      const content = document.getElementById('content');
+      const video = document.getElementById('video');
+
+      contentVisible = !contentVisible;
+      content.style.display = contentVisible ? 'block' : 'none';
+      video.style.width = contentVisible ? '40%' : '100%';
+    }
+
+    function toggleVideo() {
+      const content = document.getElementById('content');
+      const video = document.getElementById('video');
+
+      videoVisible = !videoVisible;
+      video.style.display = videoVisible ? 'flex' : 'none';
+      content.style.width = videoVisible ? '60%' : '100%';
+    }
+  </script>
 </body>
+
 </html>
